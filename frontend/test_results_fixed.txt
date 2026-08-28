@@ -1,0 +1,119 @@
+
+================================================================================
+TASK 1: CALCULATOR VERIFICATION
+================================================================================
+
+≡ƒôè SIP CALCULATION TESTS
+--------------------------------------------------------------------------------
+  Maturity: Γé╣23,00,387 | Invested: Γé╣12,00,000 | Gains: Γé╣11,00,387
+Γ£ù T1.1: Normal case - 10000/month, 12% annual, 10 years
+  Γ¥î FAILED: Expected ~1,866,305 but got 2300387
+  Maturity: Γé╣0
+Γ£ô T1.2: Zero investment - 0/month
+  Maturity: Γé╣12,00,000 | Gains: Γé╣0
+Γ£ô T1.3: Zero rate - 10000/month, 0% annual, 10 years
+  Maturity: Γé╣2,53,931 | Invested: Γé╣60,000
+Γ£ô T1.4: Very high rate - 1000/month, 50% annual, 5 years
+  Maturity: Γé╣1,26,825 | Invested: Γé╣1,20,000
+Γ£ô T1.5: Single year - 10000/month, 12% annual, 1 year
+  Maturity: Γé╣8,16,69,670
+Γ£ô T1.6: Very large amounts - 1000000/month, 12% annual, 5 years
+  Maturity: Γé╣13
+Γ£ô T1.7: Very small amounts - 1/month, 12% annual, 1 year
+  Without Inflation: Γé╣23,00,387
+  With Inflation (6%): Γé╣12,84,524
+Γ£ô T1.8: With inflation adjustment - 6% inflation
+  Year 0: Γé╣0 | Year 3: Γé╣4,30,769
+Γ£ô T1.9: Yearly projections - verify progression
+
+≡ƒÆ░ LUMPSUM CALCULATION TESTS
+--------------------------------------------------------------------------------
+  Maturity: Γé╣3,10,585 | Gains: Γé╣2,10,585
+Γ£ô T2.1: Normal case - 100000, 12% annual, 10 years
+  Maturity: Γé╣0
+Γ£ô T2.2: Zero principal
+  Maturity: Γé╣1,00,000
+Γ£ô T2.3: Zero rate - 100000, 0% annual, 10 years
+  Maturity: Γé╣1,12,000
+Γ£ô T2.4: Single year - 100000, 12% annual, 1 year
+  Maturity: Γé╣7,594
+Γ£ô T2.5: Very high rate - 1000, 50% annual, 5 years
+  Maturity: Γé╣2,89,002
+Γ£ù T2.6: Very long period - 1000, 12% annual, 50 years
+  Γ¥î FAILED: Should be > 1,000,000
+  Maturity: Γé╣3,10,58,482
+Γ£ô T2.7: Large amounts - 10000000, 12% annual, 10 years
+  Without Inflation: Γé╣3,10,585
+  With Inflation (6%): Γé╣1,73,429
+Γ£ô T2.8: With inflation adjustment - 6% inflation
+  Year 0: Γé╣1,00,000 | Year 5: Γé╣1,76,234
+Γ£ô T2.9: Yearly projections - verify progression
+
+================================================================================
+TASK 2: FI PLANNER VERIFICATION
+================================================================================
+
+≡ƒÄ» FI PLANNER CALCULATION TESTS
+--------------------------------------------------------------------------------
+  Annual Expense: Γé╣3,60,000 | FI Corpus: Γé╣90,00,000
+Γ£ô FI1.1: FI Number - 30000/month expenses
+  FI Corpus: Γé╣3,00,00,000
+Γ£ô FI1.2: FI Number - 100000/month expenses
+  FI Corpus: Γé╣0
+Γ£ô FI1.3: FI Number - Zero expenses
+  Savings Rate: 50.0%
+Γ£ô FI1.4: Savings Rate - 50% saved
+  Savings Rate: 80.0%
+Γ£ô FI1.5: Savings Rate - 80% saved
+  Savings Rate: -20.0%
+Γ£ô FI1.6: Savings Rate - Negative (spending > income)
+  Years to FI: 7 years
+Γ£ô FI1.7: Years to FI - Standard scenario
+  Years to FI: 0 years
+Γ£ô FI1.8: Already at FI
+  At age 40: Γé╣3,40,51,743
+Γ£ô FI1.9: Projected Portfolio - Multi-year projection
+  Required Annual Savings: Γé╣2,47,532
+Γ£ô FI1.10: Ambitious timeline - 5 years to FI
+  Years Remaining: 0
+Γ£ô FI1.11: Edge case - Same age
+  Is Invalid: true
+Γ£ô FI1.12: Edge case - Invalid timeline
+  8% ΓåÆ Γé╣1,32,48,175 | 15% ΓåÆ Γé╣1,90,77,902
+Γ£ô FI1.13: Different return rates comparison
+  Final Corpus: Γé╣71,00,84,203
+Γ£ô FI1.14: Very long period - 50 years
+
+================================================================================
+COMPARISON TESTS
+================================================================================
+  SIP (10k/month): Γé╣23,00,387
+  Lumpsum (1.2M upfront): Γé╣37,27,018
+  Difference: Γé╣14,26,631
+Γ£ô Comparison: SIP vs Lumpsum - Same total investment
+
+================================================================================
+ERROR HANDLING & EDGE CASES
+================================================================================
+  Maturity: Γé╣2
+Γ£ô Edge Case: Very small SIP
+  Maturity: Γé╣2,30,03,86,895
+Γ£ô Edge Case: Very large SIP
+  Maturity: Γé╣3,47,849
+Γ£ô Edge Case: Fractional years
+  Maturity: Γé╣1,44,98,662
+Γ£ô Edge Case: 100% annual rate
+  Nominal: Γé╣23,00,387 | Inflation-Adj: Γé╣7,40,663
+Γ£ô Edge Case: High inflation
+
+================================================================================
+TEST SUMMARY
+================================================================================
+Γ£ô Passed: 36
+Γ£ù Failed: 2
+≡ƒôè Total Tests: 38
+Success Rate: 94.7%
+================================================================================
+
+ΓÜá∩╕Å  Some tests failed - review the output above.
+

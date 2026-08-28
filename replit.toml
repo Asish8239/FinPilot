@@ -1,0 +1,23 @@
+# FinPilot Replit Configuration
+# This file configures Replit for deploying FinPilot
+
+[env]
+  APP_ENV = "production"
+  DATABASE_URL = ""
+  GROQ_API_KEY = ""
+  GROQ_MODEL = "mixtral-8x7b-32768"
+  GROQ_MAX_TOKENS = "1024"
+  GROQ_TEMPERATURE = "0.7"
+  ALPHA_VANTAGE_API_KEY = ""
+  SECRET_KEY = ""
+  CORS_ORIGINS = ""
+  REDIS_URL = ""
+  LOG_LEVEL = "INFO"
+
+[packages]
+  python = "3.10"
+
+[execution]
+  [execution.environment]
+    path = "/home/runner/finpilot/backend"
+    command = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
