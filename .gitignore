@@ -69,3 +69,5 @@ coverage/
 
 # Replit
 .replit
+
+backend/*.db.backup*

@@ -1,19 +1,31 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-// FinPilot is an anonymous application — no authentication required.
-// This middleware is intentionally minimal: all routes are publicly accessible.
-export function middleware(_request: NextRequest) {
-  return NextResponse.next();
+export function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  });
+
+  const requestCookies = request.cookies.getAll();
+
+  for (const cookie of requestCookies) {
+    response.cookies.set({
+      name: cookie.name,
+      value: cookie.value,
+    });
+  }
+
+  return response;
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Run middleware on application routes while excluding:
+     * - Next.js internals
+     * - static assets
+     * - favicon
+     * - common image/font files
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|otf)$).*)",
   ],
 };

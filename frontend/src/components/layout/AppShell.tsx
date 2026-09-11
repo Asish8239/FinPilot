@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   BookOpen,
@@ -20,9 +20,13 @@ import {
   ChevronRight,
   Library,
   BarChart3,
+  LogOut,
+  LogIn,
+  Loader2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type NavItem = {
   href: string;
@@ -111,13 +115,97 @@ const accountItems: NavItem[] = [
   },
 ];
 
+function getUserName(user: {
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+}) {
+  const metadata = user.user_metadata ?? {};
+
+  const name =
+    metadata.full_name ??
+    metadata.name ??
+    metadata.user_name ??
+    metadata.preferred_username;
+
+  if (typeof name === "string" && name.trim()) {
+    return name.trim();
+  }
+
+  if (user.email) {
+    return user.email.split("@")[0];
+  }
+
+  return "there";
+}
+
+function getUserInitials(name: string) {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+
+  return name.slice(0, 2).toUpperCase();
+}
+
+function getAvatarUrl(user: {
+  user_metadata?: Record<string, unknown>;
+}) {
+  const metadata = user.user_metadata ?? {};
+
+  const avatar =
+    metadata.avatar_url ??
+    metadata.picture ??
+    metadata.avatar;
+
+  return typeof avatar === "string" && avatar.trim()
+    ? avatar
+    : null;
+}
+
 export function AppShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { user, session, loading, signOut } = useAuth();
+
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  /*
+   * Show the welcome animation once for each authenticated
+   * session. Refreshing the page will not trigger it again.
+   */
+  useEffect(() => {
+    if (loading || !user || !session?.access_token) {
+      return;
+    }
+
+    const storageKey = `finpilot_welcome_shown:${user.id}:${session.access_token}`;
+
+    if (sessionStorage.getItem(storageKey)) {
+      return;
+    }
+
+    sessionStorage.setItem(storageKey, "true");
+    setShowWelcome(true);
+
+    const timer = window.setTimeout(() => {
+      setShowWelcome(false);
+    }, 3200);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [loading, user, session?.access_token]);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -131,8 +219,32 @@ export function AppShell({
       );
     }
 
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return (
+      pathname === href ||
+      pathname.startsWith(`${href}/`)
+    );
   };
+
+  const handleSignOut = async () => {
+    if (signingOut) {
+      return;
+    }
+
+    try {
+      setSigningOut(true);
+      await signOut();
+      setMobileOpen(false);
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("FinPilot sign-out failed:", error);
+      setSigningOut(false);
+    }
+  };
+
+  const displayName = user ? getUserName(user) : "";
+  const initials = user ? getUserInitials(displayName) : "";
+  const avatarUrl = user ? getAvatarUrl(user) : null;
 
   const Sidebar = ({
     mobile = false,
@@ -213,7 +325,6 @@ export function AppShell({
                               : "border border-transparent text-slate-500 hover:border-white/[0.04] hover:bg-white/[0.025] hover:text-slate-200"
                           )}
                         >
-                          {/* Active indicator */}
                           {active && (
                             <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-cyan-400" />
                           )}
@@ -309,26 +420,85 @@ export function AppShell({
         </nav>
 
         {/* ======================================================
-            QUICK INFO
+            AUTHENTICATED ACCOUNT CARD
         ====================================================== */}
         <div className="border-t border-slate-800/70 p-4">
-          <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3.5">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-400/15 bg-emerald-400/[0.05]">
-                <BarChart3 className="h-3.5 w-3.5 text-emerald-300" />
+          {loading ? (
+            <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.04]">
+                <Loader2 className="h-4 w-4 animate-spin text-slate-600" />
               </div>
 
               <div className="min-w-0">
-                <p className="text-[9px] font-semibold text-slate-300">
-                  Your financial library
-                </p>
-
-                <p className="mt-0.5 text-[8px] leading-4 text-slate-600">
-                  Learn concepts. Use tools. Make better decisions.
+                <p className="text-[10px] font-medium text-slate-500">
+                  Loading account...
                 </p>
               </div>
             </div>
-          </div>
+          ) : user ? (
+            <div className="rounded-xl border border-cyan-400/10 bg-cyan-400/[0.025] p-3">
+              <div className="flex items-center gap-3">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-9 w-9 shrink-0 rounded-full border border-cyan-400/20 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/[0.08] text-[11px] font-semibold text-cyan-300">
+                    {initials}
+                  </div>
+                )}
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[10px] font-semibold text-slate-200">
+                    {displayName}
+                  </p>
+
+                  <p className="mt-0.5 truncate text-[8px] text-slate-600">
+                    {user.email ?? "Authenticated account"}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={signingOut}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.05] bg-white/[0.025] px-3 py-2 text-[9px] font-medium text-slate-500 transition-all hover:border-red-400/15 hover:bg-red-400/[0.04] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {signingOut ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <LogOut className="h-3 w-3" />
+                )}
+
+                {signingOut ? "Signing out..." : "Log out"}
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setMobileOpen(false)}
+              className="group flex items-center gap-3 rounded-xl border border-cyan-400/10 bg-cyan-400/[0.025] p-3 transition-all hover:border-cyan-400/20 hover:bg-cyan-400/[0.045]"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/[0.08]">
+                <LogIn className="h-4 w-4 text-cyan-300" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold text-slate-300">
+                  Sign in
+                </p>
+
+                <p className="mt-0.5 text-[8px] text-slate-600">
+                  Save your FinPilot progress
+                </p>
+              </div>
+
+              <ChevronRight className="h-3 w-3 text-slate-700 transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-400" />
+            </Link>
+          )}
 
           <div className="mt-3 flex items-center justify-between px-1">
             <span className="text-[8px] uppercase tracking-[0.16em] text-slate-700">
@@ -345,7 +515,45 @@ export function AppShell({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#05090d]">
+    <div className="relative flex h-screen overflow-hidden bg-[#05090d]">
+      {/* ========================================================
+          WELCOME OVERLAY
+      ======================================================== */}
+      {showWelcome && user && (
+        <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-[#05090d]/35 backdrop-blur-[3px]" />
+
+          <div className="relative animate-[finpilotWelcome_3.2s_ease-out_forwards] rounded-2xl border border-cyan-400/15 bg-[#0a1118]/95 px-8 py-6 text-center shadow-2xl shadow-cyan-950/30">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full border border-cyan-400/20 bg-cyan-400/[0.08]">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="h-full w-full rounded-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-semibold text-cyan-300">
+                  {initials}
+                </span>
+              )}
+            </div>
+
+            <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-cyan-400/70">
+              FinPilot
+            </p>
+
+            <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white">
+              Welcome, {displayName}
+              <span className="ml-1">👋</span>
+            </h2>
+
+            <p className="mt-2 text-xs text-slate-500">
+              Your financial learning journey continues.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           DESKTOP SIDEBAR
       ======================================================== */}
@@ -398,24 +606,42 @@ export function AppShell({
             </div>
           </Link>
 
-          <button
-            type="button"
-            aria-label={
-              mobileOpen
-                ? "Close navigation"
-                : "Open navigation"
-            }
-            onClick={() =>
-              setMobileOpen((current) => !current)
-            }
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.025] transition-colors hover:bg-white/[0.05]"
-          >
-            {mobileOpen ? (
-              <X className="h-4 w-4 text-slate-300" />
-            ) : (
-              <Menu className="h-4 w-4 text-slate-300" />
+          <div className="flex items-center gap-2">
+            {user && (
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-cyan-400/20 bg-cyan-400/[0.08]">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[9px] font-semibold text-cyan-300">
+                    {initials}
+                  </span>
+                )}
+              </div>
             )}
-          </button>
+
+            <button
+              type="button"
+              aria-label={
+                mobileOpen
+                  ? "Close navigation"
+                  : "Open navigation"
+              }
+              onClick={() =>
+                setMobileOpen((current) => !current)
+              }
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.025] transition-colors hover:bg-white/[0.05]"
+            >
+              {mobileOpen ? (
+                <X className="h-4 w-4 text-slate-300" />
+              ) : (
+                <Menu className="h-4 w-4 text-slate-300" />
+              )}
+            </button>
+          </div>
         </header>
 
         {/* ======================================================
@@ -430,6 +656,35 @@ export function AppShell({
           </div>
         </main>
       </div>
+
+      {/* ========================================================
+          WELCOME ANIMATION
+          Kept local to this component so no global CSS change
+          is required.
+      ======================================================== */}
+      <style jsx global>{`
+        @keyframes finpilotWelcome {
+          0% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.96);
+          }
+
+          12% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+
+          78% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+
+          100% {
+            opacity: 0;
+            transform: translateY(-8px) scale(1.01);
+          }
+        }
+      `}</style>
     </div>
   );
 }

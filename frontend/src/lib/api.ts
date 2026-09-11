@@ -1,14 +1,27 @@
 /**
  * API client for FinPilot backend.
  *
- * Anonymous session strategy:
+ * Identity strategy:
+ *
+ * Anonymous:
  *   - A UUID is generated once per browser and stored in localStorage.
- *   - Every request carries an X-Session-ID header with that UUID.
- *   - The backend uses it to scope data (watchlist, budget, progress)
- *     without authentication.
+ *   - Every request carries X-Session-ID.
+ *
+ * Authenticated:
+ *   - Supabase provides the access token.
+ *   - Every request also carries:
+ *
+ *       Authorization: Bearer <Supabase access token>
+ *
+ *   - The backend verifies the token and maps the Supabase identity
+ *     to FinPilot's local users table.
+ *
+ * Both headers are intentionally preserved so anonymous data can later
+ * be migrated to the authenticated account.
  */
 
 import type { QuizResult } from "@/types";
+import { createClient } from "@/lib/supabase/client";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -35,6 +48,33 @@ function getSessionId(): string {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Supabase authentication
+// ─────────────────────────────────────────────────────────────
+
+const supabase = createClient();
+
+async function getAccessToken(): Promise<string | null> {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
+
+  if (error) {
+    console.warn(
+      "Unable to retrieve Supabase session:",
+      error.message
+    );
+    return null;
+  }
+
+  return session?.access_token ?? null;
+}
+
+// ─────────────────────────────────────────────────────────────
 // API Error
 // ─────────────────────────────────────────────────────────────
 
@@ -58,16 +98,28 @@ async function request<T>(
 ): Promise<T> {
   const url = `${API_URL}/api/v1${path}`;
 
+  const accessToken = await getAccessToken();
+
+  const headers = new Headers(options.headers);
+
+  headers.set("Content-Type", "application/json");
+  headers.set("X-Session-ID", getSessionId());
+
+  if (accessToken) {
+    headers.set(
+      "Authorization",
+      `Bearer ${accessToken}`
+    );
+  } else {
+    headers.delete("Authorization");
+  }
+
   let res: Response;
 
   try {
     res = await fetch(url, {
       ...options,
-      headers: {
-        "Content-Type": "application/json",
-        "X-Session-ID": getSessionId(),
-        ...(options.headers ?? {}),
-      },
+      headers,
     });
   } catch (error) {
     throw new ApiError(
@@ -102,6 +154,18 @@ async function request<T>(
 // ─────────────────────────────────────────────────────────────
 
 export const api = {
+  // ───────────────────────────────────────────────────────────
+  // Authentication
+  // ───────────────────────────────────────────────────────────
+
+  auth: {
+    status: () =>
+      request("/auth/status"),
+
+    me: () =>
+      request("/auth/me"),
+  },
+
   // ───────────────────────────────────────────────────────────
   // Modules
   // ───────────────────────────────────────────────────────────
@@ -216,21 +280,57 @@ export const api = {
       convId: string,
       content: string
     ): Promise<Response> => {
-      return fetch(
-        `${API_URL}/api/v1/tutor/conversations/${encodeURIComponent(
-          convId
-        )}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Session-ID": getSessionId(),
-          },
-          body: JSON.stringify({
-            content,
-          }),
-        }
-      );
+      const accessToken = await getAccessToken();
+
+      const headers = new Headers();
+
+      headers.set("Content-Type", "application/json");
+      headers.set("X-Session-ID", getSessionId());
+
+      if (accessToken) {
+        headers.set(
+          "Authorization",
+          `Bearer ${accessToken}`
+        );
+      }
+
+      let response: Response;
+
+      try {
+        response = await fetch(
+          `${API_URL}/api/v1/tutor/conversations/${encodeURIComponent(
+            convId
+          )}/messages`,
+          {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              content,
+            }),
+          }
+        );
+      } catch (error) {
+        throw new ApiError(
+          error instanceof Error
+            ? error.message
+            : "Unable to connect to the FinPilot backend.",
+          0
+        );
+      }
+
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+
+        const message =
+          body?.detail ??
+          body?.error?.message ??
+          body?.message ??
+          `API error ${response.status}`;
+
+        throw new ApiError(message, response.status);
+      }
+
+      return response;
     },
   },
 

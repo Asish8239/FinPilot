@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from sqlalchemy import Boolean, Integer, String, Text, ForeignKey, DateTime, func, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.core.database import Base
 
@@ -10,7 +10,7 @@ from app.core.database import Base
 class Module(Base):
     __tablename__ = "modules"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text)
@@ -29,8 +29,8 @@ class Lesson(Base):
     __tablename__ = "lessons"
     __table_args__ = (UniqueConstraint("module_id", "slug", name="uq_lesson_module_slug"),)
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    module_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("modules.id", ondelete="CASCADE"), nullable=False, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    module_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("modules.id", ondelete="CASCADE"), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     slug: Mapped[str] = mapped_column(String(100), nullable=False)
     content_type: Mapped[str] = mapped_column(String(20), default="markdown")  # markdown|video|interactive
@@ -46,3 +46,4 @@ class Lesson(Base):
     module: Mapped["Module"] = relationship(back_populates="lessons")
     quizzes: Mapped[list["Quiz"]] = relationship(back_populates="lesson", cascade="all, delete-orphan")
     progress: Mapped[list["UserProgress"]] = relationship(back_populates="lesson", cascade="all, delete-orphan")
+

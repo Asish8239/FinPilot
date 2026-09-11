@@ -6,7 +6,7 @@ from datetime import datetime
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 
 from app.core.database import Base
 
@@ -18,7 +18,7 @@ class User(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+        Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     supabase_uid: Mapped[str | None] = mapped_column(
         String, unique=False, nullable=True, index=True
@@ -67,3 +67,4 @@ class User(Base):
     watchlist: Mapped[list["WatchlistItem"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
+
