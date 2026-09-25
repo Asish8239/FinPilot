@@ -71,3 +71,9 @@ coverage/
 .replit
 
 backend/*.db.backup*
+
+# Local source archive
+finpilot-current-source.zip
+
+# Development backup artifacts
+*.step*-backup

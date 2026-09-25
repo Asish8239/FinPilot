@@ -11,7 +11,6 @@ import {
   Plus,
   MessageSquare,
   Loader2,
-  Trash2,
   Sparkles,
   BookOpen,
   RefreshCw,

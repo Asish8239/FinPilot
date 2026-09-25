@@ -11,12 +11,15 @@ from app.api.v1.ai_tutor import router as ai_tutor_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.budget import router as budget_router
 from app.api.v1.calculator import router as calculator_router
+from app.api.v1.financial_goals import router as financial_goals_router
+from app.api.v1.financial_health import router as financial_health_router
 from app.api.v1.lessons import router as lessons_router
+from app.api.v1.knowledge import router as knowledge_router
+from app.api.v1.markets import router as markets_router
 from app.api.v1.modules import router as modules_router
 from app.api.v1.progress import router as progress_router
 from app.api.v1.quiz import router as quiz_router
 from app.api.v1.watchlist import router as watchlist_router
-from app.api.v1.markets import router as markets_router
 
 
 router = APIRouter()
@@ -63,6 +66,17 @@ router.include_router(
     lessons_router,
     prefix="/lessons",
     tags=["Lessons"],
+)
+
+
+# ---------------------------------------------------------------------------
+# GLOBAL FINANCIAL KNOWLEDGE
+# ---------------------------------------------------------------------------
+
+router.include_router(
+    knowledge_router,
+    prefix="/knowledge",
+    tags=["Knowledge"],
 )
 
 
@@ -118,6 +132,28 @@ router.include_router(
     budget_router,
     prefix="/budget",
     tags=["Budget"],
+)
+
+
+# ---------------------------------------------------------------------------
+# FINANCIAL HEALTH
+# ---------------------------------------------------------------------------
+
+router.include_router(
+    financial_health_router,
+    prefix="/financial-health",
+    tags=["Financial Health"],
+)
+
+
+# ---------------------------------------------------------------------------
+# FINANCIAL GOALS
+# ---------------------------------------------------------------------------
+
+router.include_router(
+    financial_goals_router,
+    prefix="/goals",
+    tags=["Financial Goals"],
 )
 
 

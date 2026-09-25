@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import {
@@ -24,6 +24,9 @@ import {
 
 import {
   useDashboard,
+  useFinancialGoals,
+  useFinancialGoalsSummary,
+  useFinancialHealthSummary,
   useModules,
   useWatchlist,
 } from "@/hooks/useApi";
@@ -34,9 +37,7 @@ import { demoDashboard, demoModules } from "@/lib/demo-data";
    TYPES
 ============================================================ */
 
-type DashboardData = {
-  [key: string]: any;
-};
+type DashboardData = Record<string, unknown>;
 
 type WatchlistItem = {
   id: string;
@@ -44,6 +45,19 @@ type WatchlistItem = {
   name?: string;
   company_name?: string;
   notes?: string;
+};
+
+type DashboardGoal = {
+  id: string;
+  name: string;
+  category: string;
+  target_amount: string | number;
+  current_amount: string | number;
+  monthly_contribution: string | number;
+  target_date?: string | null;
+  priority?: number;
+  status?: string;
+  notes?: string | null;
 };
 
 /* ============================================================
@@ -54,7 +68,7 @@ function formatCurrency(value: unknown): string {
   const amount = Number(value);
 
   if (!Number.isFinite(amount)) {
-    return "₹0";
+    return "â‚¹0";
   }
 
   return new Intl.NumberFormat("en-IN", {
@@ -68,22 +82,22 @@ function formatCompactCurrency(value: unknown): string {
   const amount = Number(value);
 
   if (!Number.isFinite(amount)) {
-    return "₹0";
+    return "â‚¹0";
   }
 
   if (Math.abs(amount) >= 10000000) {
-    return `₹${(amount / 10000000).toFixed(1)}Cr`;
+    return `â‚¹${(amount / 10000000).toFixed(1)}Cr`;
   }
 
   if (Math.abs(amount) >= 100000) {
-    return `₹${(amount / 100000).toFixed(1)}L`;
+    return `â‚¹${(amount / 100000).toFixed(1)}L`;
   }
 
   if (Math.abs(amount) >= 1000) {
-    return `₹${(amount / 1000).toFixed(1)}K`;
+    return `â‚¹${(amount / 1000).toFixed(1)}K`;
   }
 
-  return `₹${Math.round(amount)}`;
+  return `â‚¹${Math.round(amount)}`;
 }
 
 function firstNumber(
@@ -545,6 +559,21 @@ export default function DashboardPage() {
     isLoading: watchlistLoading,
   } = useWatchlist();
 
+  const {
+    data: financialHealthSummary,
+    isLoading: financialHealthLoading,
+  } = useFinancialHealthSummary();
+
+  const {
+    data: financialGoalsQuery,
+    isLoading: financialGoalsLoading,
+  } = useFinancialGoals();
+
+  const {
+    data: financialGoalsSummary,
+    isLoading: financialGoalsSummaryLoading,
+  } = useFinancialGoalsSummary();
+
   const dashboard =
     (dashboardQuery ??
       demoDashboard ??
@@ -607,17 +636,20 @@ export default function DashboardPage() {
      FINANCIAL DATA
   ---------------------------------------------------------- */
 
-  const portfolio = firstNumber(
-    dashboard,
-    [
-      "current_portfolio",
-      "portfolio_value",
-      "investment_value",
-      "investments",
-      "corpus",
-      "current_corpus",
-    ]
-  );
+  const portfolio =
+    financialHealthSummary
+      ? Number(financialHealthSummary.investments_value)
+      : firstNumber(
+          dashboard,
+          [
+            "current_portfolio",
+            "portfolio_value",
+            "investment_value",
+            "investments",
+            "corpus",
+            "current_corpus",
+          ]
+        );
 
   const fiTarget = firstNumber(
     dashboard,
@@ -629,46 +661,57 @@ export default function DashboardPage() {
     ]
   );
 
-  const monthlyIncome = firstNumber(
-    dashboard,
-    [
-      "monthly_income",
-      "income",
-    ]
-  );
-
-  const monthlyExpenses = firstNumber(
-    dashboard,
-    [
-      "monthly_expenses",
-      "expenses",
-    ]
-  );
-
-  const monthlySavings = firstNumber(
-    dashboard,
-    [
-      "monthly_savings",
-      "savings",
-    ],
-    Math.max(
-      0,
-      monthlyIncome - monthlyExpenses
-    )
-  );
-
-  const savingsRate =
-    monthlyIncome > 0
-      ? (monthlySavings /
-          monthlyIncome) *
-        100
+  const monthlyIncome =
+    financialHealthSummary
+      ? Number(financialHealthSummary.monthly_income)
       : firstNumber(
           dashboard,
           [
-            "savings_rate",
-            "savings_percentage",
+            "monthly_income",
+            "income",
           ]
         );
+
+  const monthlyExpenses =
+    financialHealthSummary
+      ? Number(financialHealthSummary.monthly_expenses)
+      : firstNumber(
+          dashboard,
+          [
+            "monthly_expenses",
+            "expenses",
+          ]
+        );
+
+  const monthlySavings =
+    financialHealthSummary
+      ? Number(financialHealthSummary.monthly_savings)
+      : firstNumber(
+          dashboard,
+          [
+            "monthly_savings",
+            "savings",
+          ],
+          Math.max(
+            0,
+            monthlyIncome - monthlyExpenses
+          )
+        );
+
+  const savingsRate =
+    financialHealthSummary
+      ? Number(financialHealthSummary.savings_rate)
+      : monthlyIncome > 0
+        ? (monthlySavings /
+            monthlyIncome) *
+          100
+        : firstNumber(
+            dashboard,
+            [
+              "savings_rate",
+              "savings_percentage",
+            ]
+          );
 
   const fiProgress =
     fiTarget > 0
@@ -703,10 +746,89 @@ export default function DashboardPage() {
   );
 
   const hasFinancialData =
+    Boolean(financialHealthSummary) ||
     portfolio > 0 ||
     fiTarget > 0 ||
     monthlyIncome > 0 ||
     monthlyExpenses > 0;
+
+  /* ----------------------------------------------------------
+     FINANCIAL GOALS INTELLIGENCE
+  ---------------------------------------------------------- */
+
+  const financialGoals = (
+    Array.isArray(financialGoalsQuery)
+      ? financialGoalsQuery
+      : []
+  ) as DashboardGoal[];
+
+  const goalsSummary = financialGoalsSummary;
+
+  const goalMonthlyContribution = financialGoals.reduce(
+    (sum, goal) =>
+      sum + Math.max(0, Number(goal.monthly_contribution) || 0),
+    0
+  );
+
+  const goalContributionCoverage =
+    monthlySavings > 0
+      ? Math.min(
+          100,
+          (goalMonthlyContribution / monthlySavings) * 100
+        )
+      : goalMonthlyContribution > 0
+        ? 100
+        : 0;
+
+  const goalSavingsGap =
+    monthlySavings - goalMonthlyContribution;
+
+  const goalCapacityStatus =
+    goalMonthlyContribution <= 0
+      ? "not-configured"
+      : goalSavingsGap >= 0
+        ? "healthy"
+        : "attention";
+
+  const activeGoals =
+    Number(goalsSummary?.active_goals) ||
+    financialGoals.filter(
+      (goal) =>
+        (goal.status ?? "").toLowerCase() !== "completed"
+    ).length;
+
+  const completedGoals =
+    Number(goalsSummary?.completed_goals) ||
+    financialGoals.filter(
+      (goal) =>
+        (goal.status ?? "").toLowerCase() === "completed"
+    ).length;
+
+  const totalGoals =
+    Number(goalsSummary?.total_goals) ||
+    financialGoals.length;
+
+  const goalProgress = Number(
+    goalsSummary?.overall_progress_percent
+  ) || 0;
+
+  const goalRemaining = Number(
+    goalsSummary?.total_remaining_amount
+  ) || 0;
+
+  const goalTarget = Number(
+    goalsSummary?.total_target_amount
+  ) || 0;
+
+  const goalCurrent = Number(
+    goalsSummary?.total_current_amount
+  ) || 0;
+
+  const goalsLoadingState =
+    financialGoalsLoading &&
+    !financialGoalsQuery &&
+    financialGoalsSummaryLoading &&
+    !financialGoalsSummary;
 
   /* ----------------------------------------------------------
      AI / DASHBOARD INSIGHT
@@ -735,8 +857,10 @@ export default function DashboardPage() {
       : "Start by setting up your budget and FI plan. FinPilot will turn those inputs into a clearer financial roadmap.");
 
   const dashboardLoadingState =
-    dashboardLoading &&
-    !dashboardQuery;
+    (dashboardLoading &&
+      !dashboardQuery) ||
+    (financialHealthLoading &&
+      !financialHealthSummary);
 
   const marketLoadingState =
     watchlistLoading &&
@@ -951,6 +1075,223 @@ export default function DashboardPage() {
                 tone="violet"
               />
             </div>
+          )}
+        </section>
+
+        {/* ======================================================
+            GOALS INTELLIGENCE
+        ====================================================== */}
+
+        <section>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/15 bg-cyan-400/[0.07]">
+                <Target className="h-4 w-4 text-cyan-300" />
+              </div>
+
+              <div>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-cyan-300/70">
+                  Goals intelligence
+                </p>
+
+                <h2 className="mt-0.5 text-sm font-semibold text-white">
+                  Turn savings into defined outcomes
+                </h2>
+              </div>
+            </div>
+
+            <Link
+              href="/goals"
+              className="group inline-flex items-center gap-1.5 text-[10px] font-semibold text-cyan-300"
+            >
+              Manage goals
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+
+          {goalsLoadingState ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[1, 2, 3, 4].map((item) => (
+                <div
+                  key={item}
+                  className="h-28 animate-pulse rounded-2xl border border-white/[0.06] bg-white/[0.03]"
+                />
+              ))}
+            </div>
+          ) : totalGoals === 0 ? (
+            <GlassCard className="p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-cyan-400/15 bg-cyan-400/[0.07]">
+                    <Target className="h-5 w-5 text-cyan-300" />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      No financial goals yet
+                    </p>
+
+                    <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+                      Define what you are saving for and FinPilot will
+                      connect those goals with your monthly savings capacity.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/goals"
+                  className="inline-flex w-fit items-center gap-2 rounded-xl bg-cyan-400 px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-cyan-300"
+                >
+                  Create a goal
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </GlassCard>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <OverviewMetric
+                icon={Target}
+                label="Goal progress"
+                value={`${goalProgress.toFixed(1)}%`}
+                description={`${activeGoals} active · ${completedGoals} completed`}
+                tone="cyan"
+              />
+
+              <OverviewMetric
+                icon={CircleDollarSign}
+                label="Goal corpus"
+                value={formatCompactCurrency(goalCurrent)}
+                description={
+                  goalTarget > 0
+                    ? `${formatCompactCurrency(goalRemaining)} remaining`
+                    : "Current goal funding"
+                }
+                tone="violet"
+              />
+
+              <OverviewMetric
+                icon={Wallet}
+                label="Monthly goal funding"
+                value={formatCurrency(goalMonthlyContribution)}
+                description={
+                  monthlySavings > 0
+                    ? `${goalContributionCoverage.toFixed(0)}% of monthly savings`
+                    : "Monthly savings not configured"
+                }
+                tone="emerald"
+              />
+
+              <OverviewMetric
+                icon={ShieldCheck}
+                label="Savings capacity"
+                value={
+                  goalCapacityStatus === "healthy"
+                    ? formatCurrency(goalSavingsGap)
+                    : goalCapacityStatus === "attention"
+                      ? formatCurrency(
+                          Math.abs(goalSavingsGap)
+                        )
+                      : "Not set"
+                }
+                description={
+                  goalCapacityStatus === "healthy"
+                    ? "Savings remaining after goals"
+                    : goalCapacityStatus === "attention"
+                      ? "More goal funding than savings"
+                      : "Add monthly goal contributions"
+                }
+                tone={
+                  goalCapacityStatus === "attention"
+                    ? "orange"
+                    : "emerald"
+                }
+              />
+            </div>
+          )}
+
+          {totalGoals > 0 && !goalsLoadingState && (
+            <GlassCard className="mt-3 p-5">
+              <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+                <div>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+                        Funding progress
+                      </p>
+
+                      <p className="mt-1 text-sm font-semibold text-white">
+                        {formatCompactCurrency(goalCurrent)} of{" "}
+                        {formatCompactCurrency(goalTarget)}
+                      </p>
+                    </div>
+
+                    <span className="text-xs font-semibold text-cyan-300">
+                      {goalProgress.toFixed(1)}%
+                    </span>
+                  </div>
+
+                  <div className="mt-3">
+                    <ProgressBar value={goalProgress} />
+                  </div>
+
+                  <p className="mt-2 text-[10px] leading-5 text-slate-600">
+                    {formatCompactCurrency(goalRemaining)} remains across
+                    your active goal plan.
+                  </p>
+                </div>
+
+                <div
+                  className={[
+                    "rounded-xl border p-4",
+                    goalCapacityStatus === "attention"
+                      ? "border-orange-400/15 bg-orange-400/[0.04]"
+                      : "border-emerald-400/15 bg-emerald-400/[0.04]",
+                  ].join(" ")}
+                >
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck
+                      className={[
+                        "mt-0.5 h-4 w-4 shrink-0",
+                        goalCapacityStatus === "attention"
+                          ? "text-orange-300"
+                          : "text-emerald-300",
+                      ].join(" ")}
+                    />
+
+                    <div>
+                      <p className="text-xs font-semibold text-white">
+                        {goalCapacityStatus === "attention"
+                          ? "Goal funding needs attention"
+                          : "Goal funding fits your savings"}
+                      </p>
+
+                      <p className="mt-1 text-[10px] leading-5 text-slate-500">
+                        {goalCapacityStatus === "attention"
+                          ? `Your planned goal contributions exceed monthly savings by ${formatCurrency(
+                              Math.abs(goalSavingsGap)
+                            )}. Review your goal contributions before committing to them.`
+                          : goalCapacityStatus === "healthy"
+                            ? `${formatCurrency(
+                                goalSavingsGap
+                              )} of monthly savings remains after planned goal contributions.`
+                            : "Set monthly savings and goal contributions to see how your plan fits together."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/goals"
+                className="mt-4 flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-cyan-400/20 hover:bg-white/[0.035]"
+              >
+                <span className="text-xs font-semibold text-slate-300">
+                  Open Goals Intelligence
+                </span>
+
+                <ArrowRight className="h-4 w-4 text-slate-600" />
+              </Link>
+            </GlassCard>
           )}
         </section>
 

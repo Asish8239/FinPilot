@@ -85,8 +85,10 @@ export default function BadgesPage() {
      DATA
   ========================================================== */
 
-  const earned: Badge[] = (data as any)?.earned ?? [];
-  const available: Badge[] = (data as any)?.available ?? [];
+  const badgesData = data as BadgesResponse | undefined;
+
+  const earned: Badge[] = badgesData?.earned ?? [];
+  const available: Badge[] = badgesData?.available ?? [];
 
   const total = earned.length + available.length;
 

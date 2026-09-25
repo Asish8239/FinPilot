@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   addMonths,
   format,
-  isSameMonth,
   parseISO,
   subMonths,
 } from "date-fns";
@@ -42,8 +41,6 @@ import {
   CalendarDays,
   History,
   BarChart3,
-  ArrowUpRight,
-  ArrowDownRight,
 } from "lucide-react";
 
 import {
@@ -504,7 +501,7 @@ export default function BudgetPage() {
             </h1>
 
             <p className="text-sm text-slate-400 mt-2 max-w-md mx-auto leading-6">
-              We couldn't retrieve your budget data right now.
+              We couldn&apos;t retrieve your budget data right now.
               Please check that the FinPilot backend is running
               and try again.
             </p>

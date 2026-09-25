@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,6 +11,7 @@ import {
   Bot,
   Calculator,
   Wallet,
+  HeartPulse,
   Eye,
   TrendingUp,
   Menu,
@@ -19,7 +22,6 @@ import {
   User,
   ChevronRight,
   Library,
-  BarChart3,
   LogOut,
   LogIn,
   Loader2,
@@ -72,6 +74,11 @@ const navSections: NavSection[] = [
         href: "/budget",
         label: "Budget Planner",
         icon: Wallet,
+      },
+      {
+        href: "/financial-health",
+        label: "Financial Health",
+        icon: HeartPulse,
       },
       {
         href: "/markets",
@@ -688,3 +695,6 @@ export function AppShell({
     </div>
   );
 }
+
+
+

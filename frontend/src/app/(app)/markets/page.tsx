@@ -210,64 +210,22 @@ function makeDemoChart(
   return points;
 }
 
-function CandlestickShape(props: any) {
-  const { x, y, width, height, payload, yAxisScale } = props;
+type CandlePayload = {
+  open?: number | string;
+  close?: number | string;
+  high?: number | string;
+  low?: number | string;
+};
 
-  if (
-    x === undefined ||
-    y === undefined ||
-    width === undefined ||
-    height === undefined ||
-    !payload ||
-    !yAxisScale
-  ) {
-    return null;
-  }
+type CandleProps = {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  payload?: CandlePayload;
+};
 
-  const open = Number(payload.open);
-  const close = Number(payload.close);
-  const high = Number(payload.high);
-  const low = Number(payload.low);
-
-  const centerX = x + width / 2;
-  const candleWidth = Math.max(3, Math.min(12, width * 0.45));
-
-  const highY = yAxisScale(high);
-  const lowY = yAxisScale(low);
-  const openY = yAxisScale(open);
-  const closeY = yAxisScale(close);
-
-  const bodyTop = Math.min(openY, closeY);
-  const bodyBottom = Math.max(openY, closeY);
-  const bodyHeight = Math.max(2, bodyBottom - bodyTop);
-
-  const positive = close >= open;
-
-  return (
-    <g>
-      <line
-        x1={centerX}
-        x2={centerX}
-        y1={highY}
-        y2={lowY}
-        stroke={positive ? "#34d399" : "#f87171"}
-        strokeWidth={1}
-      />
-
-      <rect
-        x={centerX - candleWidth / 2}
-        y={bodyTop}
-        width={candleWidth}
-        height={bodyHeight}
-        rx={1}
-        fill={positive ? "#10b981" : "#ef4444"}
-        stroke={positive ? "#34d399" : "#f87171"}
-      />
-    </g>
-  );
-}
-
-function CustomCandle(props: any) {
+function CustomCandle(props: CandleProps) {
   const { x, y, width, height, payload } = props;
 
   if (
@@ -420,10 +378,17 @@ export default function MarketsPage() {
 
       const searchData = await response.json();
 
-      const match = searchData?.results?.find(
-        (item: any) =>
+      const results = Array.isArray(searchData?.results)
+        ? searchData.results
+        : [];
+
+      const match = results.find(
+        (item: unknown) =>
+          typeof item === "object" &&
+          item !== null &&
+          "symbol" in item &&
           String(item.symbol).toUpperCase() ===
-          symbol.toUpperCase()
+            symbol.toUpperCase()
       );
 
       if (!match) {
@@ -669,7 +634,6 @@ export default function MarketsPage() {
     if (!visibleHistory.length) return 0;
 
     const lows = visibleHistory.map((p) => p.low);
-    const highs = visibleHistory.map((p) => p.high);
 
     return Math.min(...lows) * 0.985;
   }, [visibleHistory]);
@@ -715,21 +679,6 @@ export default function MarketsPage() {
       signal: "Neutral",
     };
   }, [quote]);
-
-  const miniSeries = useMemo(() => {
-    const values = visibleHistory.map((p) => p.close);
-
-    if (values.length < 2) return [];
-
-    const step = Math.max(
-      1,
-      Math.floor(values.length / 18)
-    );
-
-    return values.filter(
-      (_, index) => index % step === 0
-    );
-  }, [visibleHistory]);
 
   return (
     <div className="min-h-full bg-slate-950 p-4 sm:p-6">

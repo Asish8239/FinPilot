@@ -64,11 +64,11 @@ export default function LessonPage() {
     (item) => item.slug === moduleSlug
   );
 
-  const module =
+  const learningModule =
     moduleQuery.data ??
     demoModule;
 
-  const demoLesson = module?.lessons?.find(
+  const demoLesson = learningModule?.lessons?.find(
     (item) => item.slug === lessonSlug
   );
 
@@ -121,13 +121,10 @@ export default function LessonPage() {
     return (
       <div className="min-h-full bg-[#05090d] text-slate-100">
         <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-5 py-10">
-
           <div className="w-full overflow-hidden rounded-[28px] border border-white/[0.08] bg-[#0a1015] shadow-2xl shadow-black/20">
-
             <div className="h-1 bg-gradient-to-r from-cyan-400 via-cyan-300 to-emerald-400" />
 
             <div className="p-8 text-center sm:p-12">
-
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.07]">
                 <BookOpen className="h-6 w-6 text-cyan-300" />
               </div>
@@ -141,12 +138,11 @@ export default function LessonPage() {
               </h1>
 
               <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">
-                We couldn't find this lesson in the current
+                We couldn&apos;t find this lesson in the current
                 FinPilot learning library.
               </p>
 
               <div className="mt-7 flex flex-wrap justify-center gap-3">
-
                 <Link
                   href={`/learn/${moduleSlug}`}
                   className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-white/[0.14] hover:bg-white/[0.06] hover:text-white"
@@ -162,7 +158,6 @@ export default function LessonPage() {
                   Browse Library
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-
               </div>
             </div>
           </div>
@@ -171,7 +166,7 @@ export default function LessonPage() {
     );
   }
 
-  const lessons = module?.lessons ?? [];
+  const lessons = learningModule?.lessons ?? [];
 
   const currentIndex = lessons.findIndex(
     (item) => item.slug === lessonSlug
@@ -218,7 +213,6 @@ The lesson content is currently being prepared. You can continue exploring the a
       ===================================================== */}
 
       <div className="sticky top-0 z-30 border-b border-white/[0.06] bg-[#05090d]/90 backdrop-blur-xl">
-
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
 
           <Link
@@ -237,7 +231,6 @@ The lesson content is currently being prepared. You can continue exploring the a
           </Link>
 
           <div className="flex min-w-0 items-center gap-3">
-
             <div className="hidden h-1.5 w-24 overflow-hidden rounded-full bg-white/[0.07] sm:block md:w-40">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-[0_0_10px_rgba(34,211,238,0.3)] transition-all duration-500"
@@ -283,7 +276,7 @@ The lesson content is currently being prepared. You can continue exploring the a
             href={`/learn/${moduleSlug}`}
             className="max-w-[220px] truncate transition hover:text-cyan-300"
           >
-            {module?.title ?? "Course"}
+            {learningModule?.title ?? "Course"}
           </Link>
 
           <span>/</span>
@@ -327,9 +320,9 @@ The lesson content is currently being prepared. You can continue exploring the a
                 )}
               </div>
 
-              {module?.title && (
+              {learningModule?.title && (
                 <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-400/60">
-                  {module.title}
+                  {learningModule.title}
                 </p>
               )}
 

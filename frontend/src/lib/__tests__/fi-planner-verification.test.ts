@@ -125,7 +125,6 @@ describe("FI Planner - calculateYears", () => {
   describe("Sanity checks", () => {
     test("corpus should never decrease with positive investment and zero return", () => {
       let corpus = 100000;
-      const target = 1000000;
       let prevCorpus = corpus;
       
       for (let year = 0; year <= 50; year++) {
@@ -218,3 +217,4 @@ describe("FI Planner - Scenario projections", () => {
     expect(moderate).toBeGreaterThanOrEqual(aggressive);
   });
 });
+

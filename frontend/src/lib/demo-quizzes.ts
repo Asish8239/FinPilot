@@ -1,4 +1,11 @@
-import type { Quiz } from "@/types";
+import type { Question, Quiz } from "@/types";
+type DemoQuestion = Question & {
+  correct_answer: string;
+};
+
+type DemoQuiz = Omit<Quiz, "questions"> & {
+  questions: DemoQuestion[];
+};
 
 /*
  * Demo quiz curriculum.
@@ -15,7 +22,7 @@ import type { Quiz } from "@/types";
  * Question interface.
  */
 
-const QUIZ_DATA: Record<string, Quiz> = {
+const QUIZ_DATA: Record<string, DemoQuiz> = {
   /* ============================================================
      SIP EXPLAINED
   ============================================================ */
@@ -43,7 +50,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "sip-q2",
@@ -55,7 +62,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "sip-q3",
@@ -72,7 +79,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "sip-q4",
@@ -92,7 +99,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "B",
-      } as any,
+      },
 
       {
         id: "sip-q5",
@@ -104,7 +111,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "risk",
-      } as any,
+      },
     ],
   },
 
@@ -144,7 +151,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "compound-q2",
@@ -156,7 +163,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "compound-q3",
@@ -173,7 +180,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "compound-q4",
@@ -185,7 +192,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "compound-q5",
@@ -197,7 +204,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "compounding",
-      } as any,
+      },
     ],
   },
 
@@ -241,7 +248,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "B",
-      } as any,
+      },
 
       {
         id: "mf-q2",
@@ -253,7 +260,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "mf-q3",
@@ -282,7 +289,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "mf-q4",
@@ -294,7 +301,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "mf-q5",
@@ -306,7 +313,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "goal",
-      } as any,
+      },
     ],
   },
 
@@ -337,7 +344,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "stock-q2",
@@ -349,7 +356,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "stock-q3",
@@ -366,7 +373,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "C",
-      } as any,
+      },
 
       {
         id: "stock-q4",
@@ -378,7 +385,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "stock-q5",
@@ -390,7 +397,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "outstanding",
-      } as any,
+      },
     ],
   },
 
@@ -433,7 +440,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "index-q2",
@@ -445,7 +452,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "index-q3",
@@ -462,7 +469,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "index-q4",
@@ -474,7 +481,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "index-q5",
@@ -486,7 +493,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "measurement",
-      } as any,
+      },
     ],
   },
 
@@ -529,7 +536,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "risk-q2",
@@ -541,7 +548,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "risk-q3",
@@ -569,7 +576,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "risk-q4",
@@ -581,7 +588,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "risk-q5",
@@ -593,7 +600,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "concentration",
-      } as any,
+      },
     ],
   },
 
@@ -636,7 +643,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "allocation-q2",
@@ -648,7 +655,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "allocation-q3",
@@ -665,7 +672,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "D",
-      } as any,
+      },
 
       {
         id: "allocation-q4",
@@ -677,7 +684,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "allocation-q5",
@@ -689,7 +696,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "classes",
-      } as any,
+      },
     ],
   },
 
@@ -732,7 +739,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "rebalance-q2",
@@ -744,7 +751,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "rebalance-q3",
@@ -773,7 +780,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "rebalance-q4",
@@ -785,7 +792,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "rebalance-q5",
@@ -797,7 +804,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "allocation",
-      } as any,
+      },
     ],
   },
 
@@ -840,7 +847,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "orders-q2",
@@ -852,7 +859,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "orders-q3",
@@ -869,7 +876,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "orders-q4",
@@ -881,7 +888,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "orders-q5",
@@ -893,7 +900,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "spread",
-      } as any,
+      },
     ],
   },
 
@@ -936,7 +943,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "trader-risk-q2",
@@ -948,7 +955,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "trader-risk-q3",
@@ -976,7 +983,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "trader-risk-q4",
@@ -988,7 +995,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "trader-risk-q5",
@@ -1000,7 +1007,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "journal",
-      } as any,
+      },
     ],
   },
 
@@ -1044,7 +1051,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "global-q2",
@@ -1056,7 +1063,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "global-q3",
@@ -1073,7 +1080,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "D",
-      } as any,
+      },
 
       {
         id: "global-q4",
@@ -1085,7 +1092,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "global-q5",
@@ -1097,7 +1104,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "currency",
-      } as any,
+      },
     ],
   },
 
@@ -1140,7 +1147,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "currency-q2",
@@ -1152,7 +1159,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "currency-q3",
@@ -1181,7 +1188,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "currency-q4",
@@ -1193,7 +1200,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "currency-q5",
@@ -1205,7 +1212,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "power",
-      } as any,
+      },
     ],
   },
 
@@ -1249,7 +1256,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 1,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "safety-net-q2",
@@ -1261,7 +1268,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 2,
         correct_answer: "true",
-      } as any,
+      },
 
       {
         id: "safety-net-q3",
@@ -1290,7 +1297,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 3,
         correct_answer: "A",
-      } as any,
+      },
 
       {
         id: "safety-net-q4",
@@ -1302,7 +1309,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 4,
         correct_answer: "false",
-      } as any,
+      },
 
       {
         id: "safety-net-q5",
@@ -1314,7 +1321,7 @@ const QUIZ_DATA: Record<string, Quiz> = {
         points: 1,
         order_index: 5,
         correct_answer: "expenses",
-      } as any,
+      },
     ],
   },
 

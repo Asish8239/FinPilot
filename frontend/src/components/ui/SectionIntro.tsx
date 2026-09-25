@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useRef } from "react";
+
+import { useCallback, useEffect, useRef } from "react";
 
 /**
  * Section Tech Intro Animation
@@ -33,28 +34,7 @@ export function SectionIntro({
   const containerRef = useRef<HTMLDivElement>(null);
   const hasAnimated = useRef(false);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || hasAnimated.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated.current) {
-            hasAnimated.current = true;
-            animateEntry();
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(container);
-
-    return () => observer.disconnect();
-  }, []);
-
-  const animateEntry = () => {
+  const animateEntry = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -77,6 +57,7 @@ export function SectionIntro({
 
     // Convert NodeList to Array for proper indexing
     const contentArray = Array.from(content);
+
     contentArray.forEach((el, i) => {
       if (el instanceof HTMLElement) {
         el.style.opacity = "0";
@@ -104,7 +85,28 @@ export function SectionIntro({
         }
       });
     });
-  };
+  }, [delay, duration]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || hasAnimated.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated.current) {
+            hasAnimated.current = true;
+            animateEntry();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [animateEntry]);
 
   return (
     <div ref={containerRef} className="relative">

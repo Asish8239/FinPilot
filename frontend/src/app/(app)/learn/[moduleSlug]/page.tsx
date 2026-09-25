@@ -23,7 +23,7 @@ export default function ModulePage() {
     data?: ModuleSummary;
   };
 
-  const module =
+  const learningModule =
     data ??
     (demoModules as ModuleSummary[]).find(
       (item) => item.slug === moduleSlug
@@ -33,7 +33,7 @@ export default function ModulePage() {
      NOT FOUND
   ============================================================ */
 
-  if (!module) {
+  if (!learningModule) {
     return (
       <div className="min-h-full bg-[#05090d] text-slate-100">
         <div className="mx-auto flex min-h-[70vh] max-w-3xl items-center justify-center px-5 py-10">
@@ -51,7 +51,7 @@ export default function ModulePage() {
             </h1>
 
             <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">
-              We couldn't load this learning module. Please return to the
+              We couldn&apos;t load this learning module. Please return to the
               learning library and choose another module.
             </p>
 
@@ -68,10 +68,12 @@ export default function ModulePage() {
     );
   }
 
-  const lessons = Array.isArray(module.lessons) ? module.lessons : [];
+  const lessons = Array.isArray(learningModule.lessons)
+    ? learningModule.lessons
+    : [];
 
-  const completedCount = module.completed_count ?? 0;
-  const lessonCount = module.lesson_count ?? lessons.length;
+  const completedCount = learningModule.completed_count ?? 0;
+  const lessonCount = learningModule.lesson_count ?? lessons.length;
 
   const progress =
     lessonCount > 0
@@ -79,7 +81,7 @@ export default function ModulePage() {
           100,
           Math.max(
             0,
-            module.completion_pct ??
+            learningModule.completion_pct ??
               Math.round((completedCount / lessonCount) * 100)
           )
         )
@@ -126,19 +128,20 @@ export default function ModulePage() {
                 <div className="flex flex-wrap items-center gap-2">
 
                   <span className="rounded-md border border-white/[0.06] bg-white/[0.035] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
-                    Chapter {String(module.order_index).padStart(2, "0")}
+                    Chapter{" "}
+                    {String(learningModule.order_index).padStart(2, "0")}
                   </span>
 
                   <span
                     className={
-                      module.level === "beginner"
+                      learningModule.level === "beginner"
                         ? "rounded-md border border-emerald-400/15 bg-emerald-400/[0.07] px-2.5 py-1 text-[10px] font-bold capitalize text-emerald-300"
-                        : module.level === "intermediate"
+                        : learningModule.level === "intermediate"
                         ? "rounded-md border border-amber-400/15 bg-amber-400/[0.07] px-2.5 py-1 text-[10px] font-bold capitalize text-amber-300"
                         : "rounded-md border border-violet-400/15 bg-violet-400/[0.07] px-2.5 py-1 text-[10px] font-bold capitalize text-violet-300"
                     }
                   >
-                    {module.level}
+                    {learningModule.level}
                   </span>
 
                   {progress >= 100 && (
@@ -151,13 +154,13 @@ export default function ModulePage() {
 
                 {/* Title */}
                 <h1 className="mt-5 text-3xl font-bold tracking-[-0.035em] text-white sm:text-4xl">
-                  {module.title}
+                  {learningModule.title}
                 </h1>
 
                 {/* Description */}
-                {module.description && (
+                {learningModule.description && (
                   <p className="mt-4 max-w-2xl text-base leading-7 text-slate-500">
-                    {module.description}
+                    {learningModule.description}
                   </p>
                 )}
               </div>
@@ -251,7 +254,7 @@ export default function ModulePage() {
                 return (
                   <Link
                     key={lesson.id}
-                    href={`/learn/${module.slug}/${lesson.slug}`}
+                    href={`/learn/${learningModule.slug}/${lesson.slug}`}
                     className="group relative flex items-center gap-4 border-b border-white/[0.055] px-5 py-5 transition-all last:border-b-0 hover:bg-white/[0.025] sm:px-6"
                   >
 
@@ -357,7 +360,7 @@ export default function ModulePage() {
               </div>
 
               <Link
-                href={`/learn/${module.slug}/${nextLesson.slug}`}
+                href={`/learn/${learningModule.slug}/${nextLesson.slug}`}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/[0.08] px-5 py-3 text-sm font-bold text-cyan-300 transition hover:border-cyan-400/40 hover:bg-cyan-400/[0.13] hover:text-cyan-200"
               >
                 {progress === 100
